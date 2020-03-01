@@ -2,7 +2,11 @@ package com.example.parkingapp
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.Gravity
+import android.view.MenuItem
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.fragment.app.DialogFragment
 import androidx.viewpager.widget.ViewPager
 import com.example.parkingapp.models.Parqueo
 import com.example.parkingapp.models.Usuario
@@ -11,6 +15,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.tabs.TabLayout
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.nav_header.view.*
 import java.io.Serializable
 
 class LoggedActivity : AppCompatActivity() {
@@ -31,15 +37,42 @@ class LoggedActivity : AppCompatActivity() {
         tabs.setupWithViewPager(viewPager)
         val findParkingSpot: FloatingActionButton = findViewById(R.id.findParkingSpot)
 
+        filterNavBar.getHeaderView(0).nombre_usuario.text = usuario.username
+
+        car_icon.setOnClickListener {
+            this.drawer_layout.openDrawer(Gravity.LEFT)
+        }
+
+        filterNavBar.setNavigationItemSelectedListener{
+            it.isChecked = true
+            drawer_layout.closeDrawers()
+            when (it.itemId){
+                R.id.logout->{
+                    val builder = android.app.AlertDialog.Builder(this)
+                    builder.setTitle("Cerrar Sesión")
+                    builder.setMessage("Desea cerrar sesión como ${usuario.username}?")
+                    builder.setPositiveButton("Si"){dialog, which ->
+                        val intent = Intent(this,MainActivity::class.java)
+                        intent.flags = (
+                                Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                                        Intent.FLAG_ACTIVITY_CLEAR_TASK or
+                                        Intent.FLAG_ACTIVITY_NEW_TASK )
+                        startActivity(intent)
+                        overridePendingTransition(R.anim.fade_in,R.anim.fade_out)
+                    }
+                    builder.setNeutralButton("Cancelar"){dialog, which ->
+                    }
+                    val dialog: android.app.AlertDialog = builder.create()
+                    dialog.show()
+
+                }
+
+            }
+            true
+        }
 
         findParkingSpot.setOnClickListener { view ->
-            /*
-            Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show()
-
-             */
-
-
+            findParkingSpot.isEnabled = false
             if(!usuario.parqueo_reservado.isEmpty()){
                 FirebaseFirestore.getInstance()
                     .collection("Parqueos")
@@ -59,6 +92,7 @@ class LoggedActivity : AppCompatActivity() {
                             intent.putExtra("parqueo", parqueo as Serializable)
                             startActivity(intent)
                             overridePendingTransition(R.anim.slide_in_up,R.anim.nothing)
+                            findParkingSpot.isEnabled = true
                         }
                     }
             }else{
@@ -68,8 +102,15 @@ class LoggedActivity : AppCompatActivity() {
                         Snackbar.LENGTH_SHORT
                     )
                     .setAction("Action", null).show()
+                findParkingSpot.isEnabled = true
             }
 
         }
     }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        this.drawer_layout.openDrawer(GravityCompat.START)
+        return true
+    }
+
 }

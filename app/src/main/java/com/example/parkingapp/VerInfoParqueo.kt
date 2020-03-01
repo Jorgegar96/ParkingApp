@@ -38,7 +38,7 @@ class VerInfoParqueo : AppCompatActivity() {
         }
         this.reservar.setOnClickListener {
             if(parqueo!!.disponible){
-                reservarParqueo(parqueo, usuario)
+                reservarParqueo(parqueo, usuario, it)
             }else{
                 Snackbar.make(
                         it,
@@ -106,49 +106,58 @@ class VerInfoParqueo : AppCompatActivity() {
         dialog.show()
     }
 
-    fun reservarParqueo(parqueo:Parqueo, usuario:Usuario){
-        val builder = AlertDialog.Builder(this)
-        builder.setTitle("Reservar")
-        builder.setMessage("Desea reservar el parqueo "
-                + parqueo.numero
-                + "?"
-        )
+    fun reservarParqueo(parqueo:Parqueo, usuario:Usuario, view: View){
 
-        //builder.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(COLOR_I_WANT)
+        if(usuario.parqueo_reservado.equals("")) {
+            val builder = AlertDialog.Builder(this)
+            builder.setTitle("Reservar")
+            builder.setMessage(
+                "Desea reservar el parqueo "
+                        + parqueo.numero
+                        + "?"
+            )
 
-        builder.setPositiveButton("Si"){dialog, which ->
+            builder.setPositiveButton("Si") { dialog, which ->
 
-            FirebaseFirestore.getInstance()
-                .collection("Parqueos")
-                .document("${parqueo.numero}-${parqueo.seccion}")
-                .update("disponible",false)
+                FirebaseFirestore.getInstance()
+                    .collection("Parqueos")
+                    .document("${parqueo.numero}-${parqueo.seccion}")
+                    .update("disponible", false)
 
-            FirebaseFirestore.getInstance()
-                .collection("Usuarios")
-                .whereEqualTo("username", usuario.username)
-                .get()
-                .addOnSuccessListener {
-                    for(document in it)
-                    FirebaseFirestore.getInstance()
-                        .collection("Usuarios")
-                        .document(document.id)
-                        .update("parqueo_reservado", "${parqueo.numero}-${parqueo.seccion}")
-                }
+                FirebaseFirestore.getInstance()
+                    .collection("Usuarios")
+                    .whereEqualTo("username", usuario.username)
+                    .get()
+                    .addOnSuccessListener {
+                        for (document in it)
+                            FirebaseFirestore.getInstance()
+                                .collection("Usuarios")
+                                .document(document.id)
+                                .update("parqueo_reservado", "${parqueo.numero}-${parqueo.seccion}")
+                    }
 
-            Toast.makeText(this, "Parqueo Reservado", Toast.LENGTH_SHORT).show()
-            val intent = Intent(this, LoggedActivity::class.java)
-            intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-            usuario.parqueo_reservado = "${parqueo.numero}-${parqueo.seccion}"
-            intent.putExtra("usuario", usuario as Serializable)
-            startActivity(intent)
-            finish()
-            overridePendingTransition(R.anim.nothing,R.anim.slide_out_down)
+                Toast.makeText(this, "Parqueo Reservado", Toast.LENGTH_SHORT).show()
+                val intent = Intent(this, LoggedActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                usuario.parqueo_reservado = "${parqueo.numero}-${parqueo.seccion}"
+                intent.putExtra("usuario", usuario as Serializable)
+                startActivity(intent)
+                finish()
+                overridePendingTransition(R.anim.nothing, R.anim.slide_out_down)
+            }
+            builder.setNeutralButton("Cancelar") { dialog, which ->
+                Toast.makeText(this, "Cancelado", Toast.LENGTH_SHORT).show()
+            }
+            val dialog: AlertDialog = builder.create()
+            dialog.show()
+        }else{
+            Snackbar.make(
+                view,
+                "Ya tienes un parqueo reservado",
+                Snackbar.LENGTH_SHORT
+            )
+                .setAction("Action", null).show()
         }
-        builder.setNeutralButton("Cancelar"){dialog, which ->
-            Toast.makeText(this, "Cancelado", Toast.LENGTH_SHORT).show()
-        }
-        val dialog: AlertDialog = builder.create()
-        dialog.show()
     }
 
     override fun finish() {
