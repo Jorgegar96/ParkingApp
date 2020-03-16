@@ -27,8 +27,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
-
-
         btn_LogIn.setOnClickListener {
             var encontrado = false
             this.progress_bar.visibility = View.VISIBLE
@@ -102,7 +100,7 @@ class MainActivity : AppCompatActivity() {
             getApplicationContext(),
             R.anim.logo_slide_center
         )
-        this.dinant_logo.startAnimation(animSlide)
+        this.parking_logo.startAnimation(animSlide)
 
         ET_usuario.startAnimation(fadeOut)
         UsuarioInput.startAnimation(fadeOut)
@@ -122,7 +120,7 @@ class MainActivity : AppCompatActivity() {
 
         fadeOut3.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationEnd(animation: Animation) {
-                dinant_logo.setVisibility(View.GONE)
+                parking_logo.setVisibility(View.GONE)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
                 intent.putExtra("usuario", usuario)
                 ET_contra.setText("")
@@ -135,15 +133,12 @@ class MainActivity : AppCompatActivity() {
             override fun onAnimationRepeat(animation: Animation) {}
             override fun onAnimationStart(animation: Animation) {}
         })
-
         animSlide.setAnimationListener(object : Animation.AnimationListener {
             override fun onAnimationEnd(animation: Animation) {
-                dinant_logo.startAnimation(fadeOut3)
+                parking_logo.startAnimation(fadeOut3)
             }
-
             override fun onAnimationRepeat(animation: Animation) {}
             override fun onAnimationStart(animation: Animation) {}
         })
     }
-
 }

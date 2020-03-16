@@ -27,28 +27,28 @@ class ListarParqueos : Fragment() {
             container,
             false
         )
-
         cargarParqueos()
-
         return view
     }
-    companion object{
 
-
-        fun newInstance(usuario: Usuario):ListarParqueos{
-
-            val fragment = ListarParqueos()
-            val args = Bundle()
-
-            args.putSerializable("usuario",usuario)
-
-            fragment.arguments =  args
-            return fragment
-
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        swipe_container.setOnRefreshListener {
+            this.progress_bar.visibility = View.VISIBLE
+            cargarParqueos()
+            swipe_container.isRefreshing = false
         }
-
     }
 
+    companion object{
+        fun newInstance(usuario: Usuario):ListarParqueos{
+            val fragment = ListarParqueos()
+            val args = Bundle()
+            args.putSerializable("usuario",usuario)
+            fragment.arguments =  args
+            return fragment
+        }
+    }
     fun cargarParqueos(){
         //progress_bar.visibility = View.VISIBLE
         FirebaseFirestore.getInstance()
@@ -71,7 +71,6 @@ class ListarParqueos : Fragment() {
                     val layoutManager = LinearLayoutManager(this.activity)
                     layoutManager.orientation = LinearLayoutManager.VERTICAL
                     recycler.layoutManager = layoutManager
-
                     val adapter = ListarParqueosAdapter(
                         this.activity as Context,
                         parqueos,
@@ -82,8 +81,6 @@ class ListarParqueos : Fragment() {
                     recycler.adapter = adapter
                 }
                 progress_bar.visibility = View.INVISIBLE
-
             }
     }
-
 }

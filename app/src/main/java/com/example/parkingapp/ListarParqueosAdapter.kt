@@ -38,13 +38,14 @@ class ListarParqueosAdapter(
         var currentPosition: Int = 0
         init{
             itemView.setOnClickListener {
+                itemView.isEnabled = false
                 val intent = Intent(context, VerInfoParqueo::class.java)
                 intent.putExtra("parqueo", currentParkingSpot as Serializable)
                 intent.putExtra("usuario", usuario as Serializable)
                 context.startActivity(intent)
                 activity.overridePendingTransition(R.anim.slide_in_up,R.anim.nothing)
+                itemView.isEnabled = true
             }
-
 
         }
         fun setData(parqueo : Parqueo?, position: Int){
@@ -54,7 +55,6 @@ class ListarParqueosAdapter(
             this.currentParkingSpot = parqueo
             this.currentPosition = position
         }
-
     }
-
 }
+

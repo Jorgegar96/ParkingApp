@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:title="Configuración">
+        <menu>
+            <group
+                android:id="@+id/config"
+                android:checkableBehavior="single">
+
+                <item
+                    android:id="@+id/logout"
+                    android:title="Cerrar Sesión"
+                    android:icon="@drawable/ic_logout">
+
+                </item>
+
+            </group>
+        </menu>
+    </item>
+
+</menu>
