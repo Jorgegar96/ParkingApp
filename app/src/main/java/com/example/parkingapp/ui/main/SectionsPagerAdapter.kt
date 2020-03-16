@@ -25,7 +25,7 @@ class SectionsPagerAdapter(private val context: Context, fm: FragmentManager, va
         if(position == 1){
             return ListarParqueos.newInstance(usuario)
         }else {
-            return PlaceholderFragment.newInstance(position + 1)
+            return ParkingFrament.newInstance(usuario)
         }
     }
 
