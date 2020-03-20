@@ -13,6 +13,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import com.example.parkingapp.models.Usuario
+import com.example.parkingapp.ui.main.BluetoothActivity
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.activity_login.*
 
@@ -68,7 +69,12 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun login(usuario: Usuario, context: Context) {
-        animation(usuario, Intent(context, LoggedActivity::class.java))
+        if(!(usuario.username.equals("server"))){
+            animation(usuario, Intent(context, LoggedActivity::class.java))
+        }else{
+            animation(usuario, Intent(context, BluetoothActivity::class.java))
+        }
+
     }
 
     fun animation(usuario: Usuario, intent: Intent) {
