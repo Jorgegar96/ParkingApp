@@ -16,8 +16,8 @@ import com.example.parkingapp.VerInfoParqueo
 import com.example.parkingapp.models.Parqueo
 import com.example.parkingapp.models.Usuario
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlinx.android.synthetic.main.fragment_main.*
 import kotlinx.android.synthetic.main.fragment_main.view.*
-import kotlinx.android.synthetic.main.listar_parqueos_frag.*
 import java.io.Serializable
 
 class ParkingFrament : Fragment() {
@@ -32,6 +32,38 @@ class ParkingFrament : Fragment() {
             container,
             false
         )
+        actualizar_parqueo(view)
+
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        swipe_container.setOnRefreshListener {
+            view.progress_bar.visibility = View.VISIBLE
+            actualizar_parqueo(view)
+            swipe_container.isRefreshing = false
+        }
+    }
+
+    companion object{
+
+
+        fun newInstance(usuario: Usuario):ParkingFrament{
+
+            val fragment = ParkingFrament()
+            val args = Bundle()
+
+            args.putSerializable("usuario",usuario)
+
+            fragment.arguments =  args
+            return fragment
+
+        }
+
+    }
+
+    fun actualizar_parqueo(view: View){
         FirebaseFirestore.getInstance()
             .collection("Parqueos")
             .get()
@@ -70,36 +102,21 @@ class ParkingFrament : Fragment() {
                 view.B3.setBackgroundColor(Color.GREEN)
                 view.A3.setBackgroundColor(Color.GREEN)
 
+                view.A1.setOnClickListener{
+                    reserva("001-A", arguments!!.get("usuario") as Usuario)
+                }
+                view.A2.setOnClickListener{
+                    reserva("002-A", arguments!!.get("usuario") as Usuario)
+                }
+                view.B1.setOnClickListener{
+                    reserva("001-B", arguments!!.get("usuario") as Usuario)
+                }
+                view.B2.setOnClickListener{
+                    reserva("002-B", arguments!!.get("usuario") as Usuario)
+                }
+                view.progress_bar.visibility = View.INVISIBLE
+
             }
-        view.A1.setOnClickListener{
-            reserva("001-A", arguments!!.get("usuario") as Usuario)
-        }
-        view.A2.setOnClickListener{
-            reserva("002-A", arguments!!.get("usuario") as Usuario)
-        }
-        view.B1.setOnClickListener{
-            reserva("001-B", arguments!!.get("usuario") as Usuario)
-        }
-        view.B2.setOnClickListener{
-            reserva("002-B", arguments!!.get("usuario") as Usuario)
-        }
-        return view
-    }
-    companion object{
-
-
-        fun newInstance(usuario: Usuario):ParkingFrament{
-
-            val fragment = ParkingFrament()
-            val args = Bundle()
-
-            args.putSerializable("usuario",usuario)
-
-            fragment.arguments =  args
-            return fragment
-
-        }
-
     }
 
     fun reserva(parqueo:String,usuario:Usuario){
