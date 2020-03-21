@@ -8,11 +8,19 @@ import android.os.AsyncTask
 import android.os.Bundle
 import java.util.*
 import android.bluetooth.BluetoothSocket
+import android.os.Looper
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.parkingapp.R
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.android.synthetic.main.control_layout.*
 import java.io.IOException
+import androidx.core.app.ComponentActivity
+import androidx.core.app.ComponentActivity.ExtraData
+import androidx.core.content.ContextCompat.getSystemService
+import android.icu.lang.UCharacter.GraphemeClusterBreak.T
+import android.view.View
 
 
 class ControlActivity: AppCompatActivity() {
@@ -28,18 +36,68 @@ class ControlActivity: AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.control_layout)
+        setContentView(com.example.parkingapp.R.layout.control_layout)
         m_address = intent.getStringExtra(BluetoothActivity.EXTRA_ADDRESS)
 
         ConnectToDevice(this).execute()
-        /*while(m_isConnected){
-            var datos:ByteArray?  = null
-            m_bluetoothSocket!!.inputStream.read(datos)
-            Toast.makeText(this, datos.toString(),Toast.LENGTH_SHORT).show()
-            Thread.sleep(5000L)
-        }*/
+
+        var mega_buffer = ""
+        var datos=""
+
+        Thread(Runnable {
+            while(true){
+                while(m_isConnected) {
+                    var buffer = ByteArray(256)
+                    val bytes = m_bluetoothSocket!!.inputStream.read(buffer)
+                    datos += String(buffer, 0, bytes)
+                    val datos_temp = datos
+                    //Toast.makeText(this, datos, Toast.LENGTH_SHORT).show()
+                    Log.d("---------BLUETOOTHLOG--------",datos)
+                    if(datos.isNotEmpty()) {
+                        runOnUiThread {
+                            val str = this.log_arduino.text
+                            this.log_arduino.setText(
+                                "$str\n" + "ARDUINO: $datos_temp"
+                            )
+                            scroll.post {
+                                scroll.fullScroll(View.FOCUS_DOWN)
+                            }
+                        }
+
+                        val cambios = datos.split(";")
+                        if(cambios.size>1) {
+                            datos = ""
+                            for (cambio in cambios) {
+                                val info = cambio.split('-')
+                                if (info.size == 3 && (info[2].equals("false") || info[2].equals("true"))) {
+                                    FirebaseFirestore.getInstance()
+                                        .collection("Parqueos")
+                                        .document("00${info[1]}-${info[0]}")
+                                        .update("disponible", info[2].toBoolean())
+                                }else{
+                                    datos+=cambio
+                                }
+                            }
+                        }
+                    }
+                    Thread.sleep(500)
+                }
+            }
+        }).start()
+
         control_led_on.setOnClickListener { sendCommand("a") }
-        control_led_off.setOnClickListener { sendCommand("b") }
+        control_led_off.setOnClickListener {
+            sendCommand("b")
+            //var datos:ByteArray?  = null
+            /*
+            var buffer = ByteArray(256)
+            val bytes = m_bluetoothSocket!!.inputStream.read(buffer)
+            val datos = String(buffer, 0, bytes)
+            Toast.makeText(this, datos,Toast.LENGTH_SHORT).show()
+
+             */
+            //Thread.sleep(5000L)
+        }
         control_led_disconnect.setOnClickListener { disconnect() }
     }
 
@@ -54,6 +112,7 @@ class ControlActivity: AppCompatActivity() {
     }
 
     private fun disconnect() {
+        /*
         if (m_bluetoothSocket != null) {
             try {
                 m_bluetoothSocket!!.close()
@@ -63,6 +122,8 @@ class ControlActivity: AppCompatActivity() {
                 e.printStackTrace()
             }
         }
+
+         */
         finish()
     }
 
